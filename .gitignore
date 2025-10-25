@@ -22,10 +22,14 @@ gcp-*.json
 
 # Generated output files
 outputs/
+outputs/*.csv
+outputs/*.png
+outputs/*.jpg
+outputs/*.jpeg
 *.csv
-*.png
-*.jpg
-*.jpeg
+# Don't ignore documentation images
+!images/
+!images/*.png
 
 # Python
 __pycache__/
