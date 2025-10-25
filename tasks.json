@@ -1,0 +1,438 @@
+{
+  "version": "2.0.0",
+  "project": "Weather Data Query & Visualization System",
+  "status": "Production Ready",
+  "last_updated": "2025-10-25",
+
+  "tasks": {
+    "setup": {
+      "description": "Initial setup and configuration tasks",
+      "tasks": [
+        {
+          "id": "setup-1",
+          "title": "Verify Python Environment",
+          "description": "Ensure Python 3.8+ is installed",
+          "command": "python --version",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "setup-2",
+          "title": "Create/Activate Virtual Environment",
+          "description": "Set up isolated Python environment",
+          "command": "python -m venv venv && source venv/bin/activate",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "setup-3",
+          "title": "Install Dependencies",
+          "description": "Install all required Python packages",
+          "command": "pip install -r requirements.txt",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "setup-4",
+          "title": "Configure Environment Variables",
+          "description": "Set up .env file with API keys and BigQuery credentials",
+          "files": [".env"],
+          "required_vars": ["LLM_PROVIDER", "GEMINI_API_KEY or ANTHROPIC_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS"],
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "setup-5",
+          "title": "Verify BigQuery Access",
+          "description": "Test BigQuery authentication and access to public datasets",
+          "command": "python -c \"from google.cloud import bigquery; client = bigquery.Client(); print('✅ BigQuery connected')\"",
+          "status": "completed",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "daily_operations": {
+      "description": "Regular operational tasks",
+      "tasks": [
+        {
+          "id": "ops-1",
+          "title": "Run Application",
+          "description": "Start the weather data agent CLI",
+          "command": "python main.py",
+          "status": "ready",
+          "priority": "high",
+          "notes": "Main entry point for user interactions"
+        },
+        {
+          "id": "ops-2",
+          "title": "Switch LLM Provider to Gemini",
+          "description": "Update .env to use Gemini 2.5 Pro",
+          "action": "Set LLM_PROVIDER=gemini in .env",
+          "status": "ready",
+          "priority": "medium"
+        },
+        {
+          "id": "ops-3",
+          "title": "Switch LLM Provider to Claude",
+          "description": "Update .env to use Claude Sonnet 4",
+          "action": "Set LLM_PROVIDER=anthropic in .env",
+          "status": "ready",
+          "priority": "medium"
+        },
+        {
+          "id": "ops-4",
+          "title": "Clean Output Directory",
+          "description": "Remove old CSV and PNG files from outputs/",
+          "command": "rm -f outputs/*.csv outputs/*.png",
+          "status": "ready",
+          "priority": "low"
+        }
+      ]
+    },
+
+    "testing": {
+      "description": "Test scenarios to verify system functionality",
+      "tasks": [
+        {
+          "id": "test-1",
+          "title": "Test Overall Aggregate Query",
+          "description": "Query overall average temperature for US in a specific month",
+          "test_query": "What is average temperature in US in January 2024?",
+          "expected_output": "Single aggregate value with no dimensional breakdown",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "test-2",
+          "title": "Test Daily Time-Series Query",
+          "description": "Query daily temperature data with time-based aggregation",
+          "test_query": "What is daily average temperature in US in January 2024?",
+          "expected_output": "31 rows with date and temperature",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "test-3",
+          "title": "Test Automatic Visualization",
+          "description": "Request visualization after querying data",
+          "test_query": "Create a chart for that data",
+          "expected_output": "Line chart PNG file generated",
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "test-4",
+          "title": "Test MIN Aggregation",
+          "description": "Query minimum values using MIN aggregation function",
+          "test_query": "What is minimal daily temperature in US in January 2024?",
+          "expected_output": "Daily minimum temperatures aggregated",
+          "status": "completed",
+          "priority": "medium"
+        },
+        {
+          "id": "test-5",
+          "title": "Test Monthly Aggregation",
+          "description": "Query with monthly time-based aggregation",
+          "test_query": "What is monthly average temperature in US in 2024?",
+          "expected_output": "12 rows with DATE_TRUNC by month",
+          "status": "completed",
+          "priority": "medium"
+        },
+        {
+          "id": "test-6",
+          "title": "Test State Filtering",
+          "description": "Query with state-level filtering",
+          "test_query": "Show me temperatures in California for March 2024",
+          "expected_output": "JOIN with stations table, filter by state='CA'",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "test-7",
+          "title": "Test Multiple Metrics",
+          "description": "Query multiple weather metrics at once",
+          "test_query": "Get temperature, precipitation, and wind speed for New York in June 2024",
+          "expected_output": "CSV with multiple metric columns",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "test-8",
+          "title": "Test Error Handling",
+          "description": "Verify graceful error handling for invalid queries",
+          "test_query": "Show me data for February 2025",
+          "expected_output": "Error message about date range (only 2024 data available)",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "test-9",
+          "title": "Test Dual LLM Switching",
+          "description": "Verify both Gemini and Claude work correctly",
+          "action": "Run same query with both providers and compare results",
+          "status": "pending",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "maintenance": {
+      "description": "Maintenance and cleanup tasks",
+      "tasks": [
+        {
+          "id": "maint-1",
+          "title": "Update Dependencies",
+          "description": "Update Python packages to latest versions",
+          "command": "pip list --outdated && pip install --upgrade anthropic google-generativeai google-cloud-bigquery pandas matplotlib",
+          "status": "pending",
+          "priority": "medium",
+          "schedule": "monthly"
+        },
+        {
+          "id": "maint-2",
+          "title": "Clean Up Outdated Documentation",
+          "description": "Remove redundant and outdated documentation files",
+          "reference": "FILES_TO_REMOVE.md",
+          "files_to_remove": [
+            "conversation_history.md",
+            "DOCUMENTATION_INDEX.md",
+            "PROJECT_SUMMARY.md",
+            "SETUP_GITHUB.md",
+            "PRD_APPENDIX.md"
+          ],
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "maint-3",
+          "title": "Remove macOS System Files",
+          "description": "Delete .DS_Store files",
+          "command": "find . -name '.DS_Store' -delete",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "maint-4",
+          "title": "Review and Clean Duplicate CSV Files",
+          "description": "Check for duplicate output files in outputs/",
+          "files": ["outputs/avg_temp_us_jan_2024.csv", "outputs/us_avg_temp_jan_2024.csv"],
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "maint-5",
+          "title": "Update .gitignore",
+          "description": "Ensure .DS_Store and all secrets are properly ignored",
+          "command": "echo '.DS_Store' >> .gitignore",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "maint-6",
+          "title": "Verify No Secrets in Git",
+          "description": "Scan repository for accidentally committed secrets",
+          "command": "git log --all --full-history --source -- .env keys/ credentials/",
+          "status": "pending",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "enhancements": {
+      "description": "Future feature enhancements and improvements",
+      "tasks": [
+        {
+          "id": "enh-1",
+          "title": "Add Weekly Aggregation Tests",
+          "description": "Test weekly time-based aggregation functionality",
+          "test_query": "Show me weekly average temperature in US for Q1 2024",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "enh-2",
+          "title": "Implement Logging",
+          "description": "Add structured logging for queries and errors",
+          "files": ["main.py", "tools/bigquery_tool.py"],
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "enh-3",
+          "title": "Add Query Caching",
+          "description": "Cache BigQuery results to avoid redundant queries",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "enh-4",
+          "title": "Support Multiple Years",
+          "description": "Extend to query NOAA data from 2020-2024",
+          "tables": ["gsod2020", "gsod2021", "gsod2022", "gsod2023", "gsod2024"],
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "enh-5",
+          "title": "Add Heatmap Visualization",
+          "description": "Implement geographic heatmaps using latitude/longitude from stations table",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "enh-6",
+          "title": "Create Web Interface",
+          "description": "Build Streamlit or Gradio web UI for non-CLI users",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "enh-7",
+          "title": "Add Unit Tests",
+          "description": "Create pytest test suite for tools and orchestrator",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "enh-8",
+          "title": "Export to Multiple Formats",
+          "description": "Support Excel, JSON, and Parquet exports in addition to CSV",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "enh-9",
+          "title": "Add Interactive Charts",
+          "description": "Use Plotly for interactive visualizations instead of static matplotlib",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "enh-10",
+          "title": "Implement Conversation Memory",
+          "description": "Allow LLM to reference previous queries in the session",
+          "status": "pending",
+          "priority": "medium",
+          "notes": "Already has conversation history, needs context retention logic"
+        }
+      ]
+    },
+
+    "documentation": {
+      "description": "Documentation tasks",
+      "tasks": [
+        {
+          "id": "doc-1",
+          "title": "Keep README Updated",
+          "description": "Update README with new features and examples",
+          "files": ["README.md"],
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "doc-2",
+          "title": "Update PRD for Version 2.0",
+          "description": "Reflect dual LLM support and JOIN functionality in PRD",
+          "files": ["PRD.md"],
+          "status": "completed",
+          "priority": "high"
+        },
+        {
+          "id": "doc-3",
+          "title": "Create API Documentation",
+          "description": "Document tool APIs and LLMClient interface",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "doc-4",
+          "title": "Create Demo Video",
+          "description": "Record screencast showing key features",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "doc-5",
+          "title": "Add More Screenshots",
+          "description": "Capture screenshots for state filtering, multiple metrics, etc.",
+          "status": "pending",
+          "priority": "low"
+        }
+      ]
+    },
+
+    "deployment": {
+      "description": "Deployment and distribution tasks",
+      "tasks": [
+        {
+          "id": "deploy-1",
+          "title": "Create GitHub Repository",
+          "description": "Push code to GitHub for version control and sharing",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "deploy-2",
+          "title": "Add GitHub Actions CI/CD",
+          "description": "Set up automated testing on push",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "deploy-3",
+          "title": "Create Docker Image",
+          "description": "Containerize application for easy deployment",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "deploy-4",
+          "title": "Publish to PyPI",
+          "description": "Package and publish as installable Python package",
+          "status": "pending",
+          "priority": "low"
+        }
+      ]
+    }
+  },
+
+  "quick_commands": {
+    "description": "Quick reference commands for common tasks",
+    "commands": {
+      "run": "python main.py",
+      "test_gemini": "LLM_PROVIDER=gemini python main.py",
+      "test_claude": "LLM_PROVIDER=anthropic python main.py",
+      "clean_outputs": "rm -f outputs/*.csv outputs/*.png",
+      "update_deps": "pip install --upgrade -r requirements.txt",
+      "check_bigquery": "python -c 'from google.cloud import bigquery; client = bigquery.Client(); print(\"✅ Connected\")'",
+      "remove_ds_store": "find . -name '.DS_Store' -delete",
+      "git_status": "git status",
+      "git_commit_cleanup": "git add -A && git commit -m 'Clean up outdated documentation'"
+    }
+  },
+
+  "sample_queries": {
+    "description": "Example queries to test different functionalities",
+    "queries": [
+      "What is average temperature in US in January 2024?",
+      "What is daily average temperature in US in January 2024?",
+      "What is minimal daily temperature in US in January 2024?",
+      "What is monthly average temperature in US in 2024?",
+      "Show me temperatures in California for March 2024",
+      "Get precipitation data for New York in June 2024",
+      "Plot that data",
+      "Create a visualization of the results",
+      "Show me wind speed and temperature in Texas for July 2024"
+    ]
+  },
+
+  "notes": {
+    "llm_providers": "System supports both Gemini 2.5 Pro and Claude Sonnet 4. Switch via LLM_PROVIDER in .env",
+    "bigquery_access": "Requires Google Cloud credentials with BigQuery Data Viewer role",
+    "data_coverage": "NOAA GSOD 2024 dataset only (2024-01-01 to 2024-12-31)",
+    "max_rows": "Queries limited to 10,000 rows for performance",
+    "join_logic": "Automatically JOINs with stations table when filtering by country/state/station",
+    "aggregation_types": "Supports none (raw), daily, weekly, monthly time aggregations plus AVG/MIN/MAX metric aggregations"
+  }
+}

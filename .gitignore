@@ -14,9 +14,11 @@
 keys/
 
 # Google Cloud credentials
-*.json
 credentials/
+credentials/*.json
 service-account-*.json
+*-key.json
+gcp-*.json
 
 # Generated output files
 outputs/
