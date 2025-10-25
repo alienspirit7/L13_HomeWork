@@ -1,0 +1,21 @@
+# Weather Data Query & Visualization System
+# Python Dependencies
+
+# LLM APIs - Choose one or both
+google-generativeai>=0.8.0  # Gemini API (default)
+anthropic>=0.39.0           # Claude API (optional)
+
+# Google Cloud BigQuery
+google-cloud-bigquery>=3.25.0
+
+# Data Processing
+pandas>=2.2.0
+
+# Visualization
+matplotlib>=3.9.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Optional but recommended
+numpy>=1.24.0
