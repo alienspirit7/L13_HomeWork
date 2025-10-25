@@ -117,6 +117,11 @@ Execute SQL queries against NOAA weather dataset based on user parameters.
             "enum": ["daily", "weekly", "monthly", "none"],
             "default": "none"
         },
+        "metric_aggregation": {
+            "type": "string",
+            "enum": ["avg", "min", "max"],
+            "default": "avg"
+        },
         "output_filename": {"type": "string", "default": "weather_data.csv"}
     }
 }
@@ -270,6 +275,12 @@ You are a weather data assistant that helps users query and visualize NOAA weath
                 "enum": ["daily", "weekly", "monthly", "none"],
                 "description": "How to aggregate the data"
             },
+            "metric_aggregation": {
+                "type": "string",
+                "enum": ["avg", "min", "max"],
+                "description": "Metric aggregation function (avg, min, max)",
+                "default": "avg"
+            },
             "output_filename": {
                 "type": "string",
                 "description": "Name of the output CSV file",
@@ -389,6 +400,7 @@ Parameters:
 - end_date: "2024-08-31"
 - metrics: ["temp", "country"]
 - aggregation: "monthly"
+- metric_aggregation": "avg"
 - output_filename: "us_canada_summer_temps.csv"
 
 [Tool execution]

@@ -233,6 +233,9 @@ The system supports querying these weather metrics:
 
 Plus location fields: station_id, name, country, state
 
+And aggregation functions for metrics:
+- **metric_aggregation**: `avg` (default), `min`, `max`
+
 ---
 
 ## 🎯 Sample Queries You Can Make
@@ -240,6 +243,7 @@ Plus location fields: station_id, name, country, state
 ### Temperature Queries
 - "Show me temperatures in New York for January"
 - "Get monthly average temps for California in 2024"
+- "What was the minimum temperature in Boston in February?"
 - "Compare max temperatures between summer and winter in Texas"
 
 ### Precipitation Queries

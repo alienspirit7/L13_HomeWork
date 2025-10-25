@@ -57,6 +57,7 @@ QUALITY STANDARDS:
 - Always specify all required parameters
 - Use descriptive output filenames (e.g., "ca_jan_temps.csv" not "data.csv")
 - Default to daily aggregation unless user specifies otherwise
+- Default to 'avg' for metric aggregation unless user specifies 'min' or 'max'
 - Include date in metrics unless doing aggregation without dates
 - For visualizations, create meaningful titles
 - Validate date ranges are within 2024
@@ -337,6 +338,11 @@ AGGREGATION:
 - Look for: "daily", "weekly", "monthly", "average", "total"
 - Default: "none" (daily data)
 - Choose: "monthly" for comparisons across months, "weekly" for week-level analysis
+
+METRIC AGGREGATION:
+- Look for: "average", "mean", "min", "minimum", "max", "maximum"
+- Default: "avg"
+- Choose: "min" for lowest values, "max" for highest values
 ```
 
 ### 5.2 Filename Generation Prompt (Internal)
@@ -417,6 +423,7 @@ Parameters:
 - end_date: "2024-08-31"
 - metrics: ["temp", "state", "date"]
 - aggregation: "monthly"
+- metric_aggregation: "avg"
 - output_filename: "ca_tx_summer_comparison.csv"
 
 Note: Will aggregate by state and month for cleaner comparison

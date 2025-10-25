@@ -49,6 +49,12 @@ TOOL_DEFINITIONS = [
                     "enum": ["daily", "weekly", "monthly", "none"],
                     "description": "How to aggregate the data"
                 },
+                "metric_aggregation": {
+                    "type": "string",
+                    "enum": ["avg", "min", "max"],
+                    "description": "Metric aggregation function (avg, min, max)",
+                    "default": "avg"
+                },
                 "output_filename": {
                     "type": "string",
                     "description": "Name of the output CSV file",
@@ -116,6 +122,7 @@ GEMINI_TOOLS = [
                         "station_id": genai.protos.Schema(type=genai.protos.Type.STRING, description="Specific weather station ID"),
                         "metrics": genai.protos.Schema(type=genai.protos.Type.ARRAY, items=genai.protos.Schema(type=genai.protos.Type.STRING), description="List of metrics to retrieve: temp, max, min, prcp, wdsp, dewp, slp, sndp"),
                         "aggregation": genai.protos.Schema(type=genai.protos.Type.STRING, description="How to aggregate the data: daily, weekly, monthly, none"),
+                        "metric_aggregation": genai.protos.Schema(type=genai.protos.Type.STRING, description="Metric aggregation function (avg, min, max)"),
                         "output_filename": genai.protos.Schema(type=genai.protos.Type.STRING, description="Name of the output CSV file"),
                     },
                     required=["start_date", "end_date", "metrics"]

@@ -12,6 +12,12 @@ import os
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import Config
 
+# Valid metric fields (numeric values that can be aggregated)
+VALID_METRICS = ['temp', 'max', 'min', 'prcp', 'wdsp', 'dewp', 'slp', 'sndp']
+
+# Dimension fields (grouping attributes)
+DIMENSION_FIELDS = ['country', 'state', 'station_id', 'name']
+
 
 def execute_bigquery_query(
     start_date: str,
@@ -21,6 +27,7 @@ def execute_bigquery_query(
     state: str = None,
     station_id: str = None,
     aggregation: str = "none",
+    metric_aggregation: str = "avg",
     output_filename: str = "weather_data.csv"
 ) -> dict:
     """
@@ -33,7 +40,8 @@ def execute_bigquery_query(
         country: Two-letter country code (optional)
         state: Two-letter state code (optional)
         station_id: Specific weather station ID (optional)
-        aggregation: Aggregation type (daily, weekly, monthly, none)
+        aggregation: Date aggregation type (daily, weekly, monthly, none)
+        metric_aggregation: Metric aggregation function (avg, min, max)
         output_filename: Name of output CSV file
 
     Returns:
@@ -53,10 +61,10 @@ def execute_bigquery_query(
 
         # Add requested metrics
         for metric in metrics:
-            if metric.lower() not in ['temp', 'max', 'min', 'prcp', 'wdsp', 'dewp', 'slp', 'sndp']:
+            if metric.lower() not in VALID_METRICS:
                 return {
                     "success": False,
-                    "message": f"Invalid metric: {metric}. Valid metrics: temp, max, min, prcp, wdsp, dewp, slp, sndp",
+                    "message": f"Invalid metric: {metric}. Valid metrics: {', '.join(VALID_METRICS)}",
                     "file_path": None
                 }
             select_fields.append(metric.lower())
@@ -73,23 +81,39 @@ def execute_bigquery_query(
         if station_id:
             where_conditions.append(f"station_id = '{station_id}'")
 
-        # Build aggregation clause
+        # Build aggregation and GROUP BY clause
         group_by_clause = ""
-        if aggregation.lower() in ["weekly", "monthly"]:
+
+        # Determine if we need aggregation (when we have metrics, we likely need to aggregate)
+        has_metrics = any(field in VALID_METRICS for field in select_fields)
+        needs_grouping = aggregation.lower() != "none" or has_metrics
+
+        if needs_grouping:
+            # Apply date truncation for weekly/monthly aggregation
             if aggregation.lower() == "weekly":
                 select_fields[0] = "DATE_TRUNC(date, WEEK) as date"
             elif aggregation.lower() == "monthly":
                 select_fields[0] = "DATE_TRUNC(date, MONTH) as date"
+            # For "daily" or "none" with metrics, keep "date" as is
 
-            # Average numeric metrics
+            # Determine aggregation function
+            agg_func = metric_aggregation.upper()
+            if agg_func not in ['AVG', 'MIN', 'MAX']:
+                agg_func = 'AVG'  # Default to AVG if invalid
+
+            # Apply aggregation functions to all metrics
             for i, field in enumerate(select_fields):
-                if field in ['temp', 'max', 'min', 'prcp', 'wdsp', 'dewp', 'slp', 'sndp']:
-                    select_fields[i] = f"AVG({field}) as {field}"
+                if field in VALID_METRICS:
+                    select_fields[i] = f"{agg_func}({field}) as {field}"
 
-            # Group by clause
+            # Build GROUP BY clause with dimensions
             group_by_fields = ["date"]
-            if "country" in select_fields:
-                group_by_fields.extend(["country", "state", "station_id", "name"])
+
+            # Add location dimensions to GROUP BY if they're in the select
+            for dim in DIMENSION_FIELDS:
+                if dim in select_fields:
+                    group_by_fields.append(dim)
+
             group_by_clause = f"\nGROUP BY {', '.join(group_by_fields)}"
 
         # Build final query
