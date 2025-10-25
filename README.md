@@ -330,9 +330,13 @@ L13_HomeWork/
 ├── images/                       # Screenshots and documentation ✅
 │   └── *.png                    # Conversation screenshots
 │
-└── outputs/                      # Generated files ✅
-    ├── *.csv                    # Query results (31-524KB files)
-    └── *.png                    # Visualizations (24-48KB charts)
+├── outputs_example/              # Example outputs for documentation ✅
+│   ├── *.csv                    # Sample query results (tracked in git)
+│   └── *.png                    # Sample visualizations (tracked in git)
+│
+└── outputs/                      # Generated files (gitignored) ✅
+    ├── *.csv                    # Query results (not in repo)
+    └── *.png                    # Visualizations (not in repo)
 ```
 
 ---
