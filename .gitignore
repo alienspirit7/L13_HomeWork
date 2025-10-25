@@ -20,13 +20,19 @@ service-account-*.json
 *-key.json
 gcp-*.json
 
-# Generated output files (ignore outputs/ but not outputs_example/)
-outputs/
+# Generated output files
+# Ignore CSV files except in outputs_example/
 *.csv
-# Don't ignore example outputs for documentation
-!outputs_example/
 !outputs_example/*.csv
+
+# Ignore outputs directory but not outputs_example
+/outputs/
+!/outputs_example/
+outputs_example/*.csv
+!outputs_example/*.csv
+outputs_example/*.png
 !outputs_example/*.png
+outputs_example/*.jpg
 !outputs_example/*.jpg
 # Don't ignore documentation images
 !images/
