@@ -1,5 +1,4 @@
-"""
-Weather Data Agent - Main Orchestrator
+"""Weather Data Agent - Main Orchestrator
 LLM-powered agent for querying and visualizing NOAA weather data
 """
 
@@ -158,7 +157,7 @@ class LLMClient:
         if provider == "gemini":
             genai.configure(api_key=Config.GEMINI_API_KEY)
             self.model = genai.GenerativeModel(
-                'gemini-1.5-pro',
+                'gemini-2.5-pro',
                 tools=GEMINI_TOOLS
             )
             self.chat = None
@@ -196,14 +195,12 @@ class LLMClient:
             "stop_reason": "end_turn"
         }
 
-        # Check for text
-        if response.text:
-            result["content"].append({"type": "text", "text": response.text})
-
-        # Check for function calls
+        # Check for function calls and text in parts
+        has_function_call = False
         if response.candidates[0].content.parts:
             for part in response.candidates[0].content.parts:
                 if part.function_call:
+                    has_function_call = True
                     fc = part.function_call
                     result["content"].append({
                         "type": "tool_use",
@@ -212,6 +209,8 @@ class LLMClient:
                         "id": f"call_{fc.name}"
                     })
                     result["stop_reason"] = "tool_use"
+                elif part.text:
+                    result["content"].append({"type": "text", "text": part.text})
 
         return result
 

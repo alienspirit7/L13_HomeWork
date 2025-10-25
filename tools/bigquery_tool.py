@@ -16,7 +16,7 @@ from config import Config
 VALID_METRICS = ['temp', 'max', 'min', 'prcp', 'wdsp', 'dewp', 'slp', 'sndp']
 
 # Dimension fields (grouping attributes)
-DIMENSION_FIELDS = ['country', 'state', 'station_id', 'name']
+DIMENSION_FIELDS = ['country', 'state', 'stn', 'name']
 
 
 def execute_bigquery_query(
@@ -52,14 +52,28 @@ def execute_bigquery_query(
         # Initialize BigQuery client
         client = bigquery.Client()
 
+        # Determine if we need to join with stations table
+        needs_station_join = country or state or station_id
+
+        # Determine if we should include dimensional breakdown
+        # Only include dimensions if: no aggregation (raw data) OR filtering by specific station
+        include_dimensions = aggregation.lower() == "none" or station_id
+
         # Build SELECT clause
-        select_fields = ["date"]
+        select_fields = []
 
-        # Add location fields
-        if country or state or station_id:
-            select_fields.extend(["station_id", "name", "country", "state"])
+        # Add date field based on query type:
+        # - Time-based aggregation (daily/weekly/monthly): need date
+        # - Dimensional breakdown (raw data): need date
+        # - Overall aggregate (no dimensions): don't need date
+        if aggregation.lower() != "none" or include_dimensions or not needs_station_join:
+            select_fields.append("g.date")
 
-        # Add requested metrics
+        # Add location fields only if we want dimensional breakdown
+        if needs_station_join and include_dimensions:
+            select_fields.extend(["g.stn as station_id", "s.name", "s.country", "s.state"])
+
+        # Add requested metrics with table alias
         for metric in metrics:
             if metric.lower() not in VALID_METRICS:
                 return {
@@ -67,35 +81,29 @@ def execute_bigquery_query(
                     "message": f"Invalid metric: {metric}. Valid metrics: {', '.join(VALID_METRICS)}",
                     "file_path": None
                 }
-            select_fields.append(metric.lower())
+            select_fields.append(f"g.{metric.lower()}")
 
         # Build WHERE clause
-        where_conditions = [f"date >= '{start_date}'", f"date <= '{end_date}'"]
+        where_conditions = [f"g.date >= '{start_date}'", f"g.date <= '{end_date}'"]
 
         if country:
-            where_conditions.append(f"country = '{country.upper()}'")
+            where_conditions.append(f"s.country = '{country.upper()}'")
 
         if state:
-            where_conditions.append(f"state = '{state.upper()}'")
+            where_conditions.append(f"s.state = '{state.upper()}'")
 
         if station_id:
-            where_conditions.append(f"station_id = '{station_id}'")
+            where_conditions.append(f"g.stn = '{station_id}'")
 
         # Build aggregation and GROUP BY clause
         group_by_clause = ""
+        order_by_field = "g.date" if select_fields and "g.date" in str(select_fields[0]) else None
 
-        # Determine if we need aggregation (when we have metrics, we likely need to aggregate)
-        has_metrics = any(field in VALID_METRICS for field in select_fields)
-        needs_grouping = aggregation.lower() != "none" or has_metrics
+        # Determine if we should apply aggregation functions to metrics
+        # Apply aggregation if we're grouping by dimensions or if it's an overall aggregate
+        should_aggregate_metrics = not include_dimensions
 
-        if needs_grouping:
-            # Apply date truncation for weekly/monthly aggregation
-            if aggregation.lower() == "weekly":
-                select_fields[0] = "DATE_TRUNC(date, WEEK) as date"
-            elif aggregation.lower() == "monthly":
-                select_fields[0] = "DATE_TRUNC(date, MONTH) as date"
-            # For "daily" or "none" with metrics, keep "date" as is
-
+        if should_aggregate_metrics:
             # Determine aggregation function
             agg_func = metric_aggregation.upper()
             if agg_func not in ['AVG', 'MIN', 'MAX']:
@@ -103,30 +111,83 @@ def execute_bigquery_query(
 
             # Apply aggregation functions to all metrics
             for i, field in enumerate(select_fields):
-                if field in VALID_METRICS:
-                    select_fields[i] = f"{agg_func}({field}) as {field}"
+                # Check if this field is a metric (contains g.metric_name)
+                for metric in VALID_METRICS:
+                    if field == f"g.{metric}":
+                        select_fields[i] = f"{agg_func}(g.{metric}) as {metric}"
+                        break
 
-            # Build GROUP BY clause with dimensions
-            group_by_fields = ["date"]
+            # Build GROUP BY clause only if we have dimensional fields
+            group_by_fields = []
+
+            # Check if we're doing time-based aggregation
+            if aggregation.lower() in ["daily", "weekly", "monthly"]:
+                # Apply date truncation for weekly/monthly aggregation
+                if aggregation.lower() == "weekly":
+                    # Update the date field in select_fields
+                    for i, field in enumerate(select_fields):
+                        if "g.date" in field:
+                            select_fields[i] = "DATE_TRUNC(g.date, WEEK) as date"
+                            break
+                elif aggregation.lower() == "monthly":
+                    for i, field in enumerate(select_fields):
+                        if "g.date" in field:
+                            select_fields[i] = "DATE_TRUNC(g.date, MONTH) as date"
+                            break
+                else:  # daily
+                    for i, field in enumerate(select_fields):
+                        if "g.date" in field:
+                            select_fields[i] = "g.date as date"
+                            break
+
+                group_by_fields.append("date")
+                order_by_field = "date"
 
             # Add location dimensions to GROUP BY if they're in the select
-            for dim in DIMENSION_FIELDS:
-                if dim in select_fields:
-                    group_by_fields.append(dim)
+            if include_dimensions and needs_station_join:
+                for i, field in enumerate(select_fields):
+                    if "g.date" in field:
+                        select_fields[i] = "g.date as date"
+                        break
+                if "date" not in group_by_fields:
+                    group_by_fields.append("date")
+                group_by_fields.extend(["g.stn", "s.name", "s.country", "s.state"])
+                if not order_by_field:
+                    order_by_field = "date"
 
-            group_by_clause = f"\nGROUP BY {', '.join(group_by_fields)}"
+            if group_by_fields:
+                group_by_clause = f"\nGROUP BY {', '.join(group_by_fields)}"
+
+        # Build ORDER BY clause
+        order_by_clause = ""
+        if order_by_field:
+            order_by_clause = f"\nORDER BY\n            {order_by_field}"
 
         # Build final query
-        query = f"""
+        if needs_station_join:
+            query = f"""
         SELECT
             {', '.join(select_fields)}
         FROM
-            `{Config.get_bigquery_table_path()}`
+            `{Config.get_bigquery_table_path()}` g
+        JOIN
+            `bigquery-public-data.noaa_gsod.stations` s
+        ON
+            g.stn = s.usaf AND g.wban = s.wban
         WHERE
             {' AND '.join(where_conditions)}
-        {group_by_clause}
-        ORDER BY
-            date
+        {group_by_clause}{order_by_clause}
+        LIMIT {Config.MAX_QUERY_ROWS}
+        """
+        else:
+            query = f"""
+        SELECT
+            {', '.join(select_fields)}
+        FROM
+            `{Config.get_bigquery_table_path()}` g
+        WHERE
+            {' AND '.join(where_conditions)}
+        {group_by_clause}{order_by_clause}
         LIMIT {Config.MAX_QUERY_ROWS}
         """
 
