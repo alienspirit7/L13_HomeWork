@@ -179,7 +179,7 @@ The system is fully implemented and operational! Here are actual examples from p
 ![Example 1 Screenshot](images/Screenshot%202025-10-25%20at%2017.25.05.png)
 
 **Result:** Single aggregate value - `34.62°F` average across all US weather stations
-- **Output:** [us_avg_temp_jan_2024.csv](outputs/us_avg_temp_jan_2024.csv)
+- **Output:** CSV saved to `outputs/` folder
 - **Query Type:** Overall aggregate (no dimensional breakdown)
 
 ---
@@ -192,9 +192,9 @@ The system is fully implemented and operational! Here are actual examples from p
 
 **Results:**
 - **Data:** 31 rows showing daily average temperatures from Jan 1-31
-- **CSV:** [us_daily_avg_temp_jan_2024.csv](outputs/us_daily_avg_temp_jan_2024.csv)
+- **CSV:** [us_daily_avg_temp_jan_2024.csv](outputs_example/us_daily_avg_temp_jan_2024.csv)
 - **Visualization:** Automatic line chart created
-- **Chart:** [us_daily_avg_temp_jan_2024.png](outputs/us_daily_avg_temp_jan_2024.png)
+- **Chart:** [us_daily_avg_temp_jan_2024.png](outputs_example/us_daily_avg_temp_jan_2024.png)
 
 **Key Insight:** Temperature dropped significantly mid-month (Jan 15-16 reaching ~22°F) before rising to ~41°F by month end.
 
@@ -208,8 +208,8 @@ The system is fully implemented and operational! Here are actual examples from p
 
 **Results:**
 - **Data:** Daily minimum temperatures aggregated across all US stations
-- **CSV:** [us_daily_min_temp_jan_2024.csv](outputs/us_daily_min_temp_jan_2024.csv)
-- **Chart:** [us_daily_min_temp_jan_2024.png](outputs/us_daily_min_temp_jan_2024.png)
+- **CSV:** CSV saved to `outputs/` folder
+- **Chart:** [us_daily_min_temp_jan_2024.png](outputs_example/us_daily_min_temp_jan_2024.png)
 - **Aggregation:** Uses `MIN` function on minimum temperature metric
 
 ---
@@ -222,8 +222,8 @@ The system is fully implemented and operational! Here are actual examples from p
 
 **Results:**
 - **Data:** 12 rows showing monthly averages for entire year
-- **CSV:** [us_monthly_avg_temp_2024.csv](outputs/us_monthly_avg_temp_2024.csv)
-- **Chart:** [us_monthly_avg_temp_2024.png](outputs/us_monthly_avg_temp_2024.png)
+- **CSV:** CSV saved to `outputs/` folder
+- **Chart:** [us_monthly_avg_temp_2024.png](outputs_example/us_monthly_avg_temp_2024.png)
 - **Aggregation:** Monthly time-based aggregation with `DATE_TRUNC`
 
 **Key Insights:**
@@ -250,7 +250,7 @@ The system automatically generates professional visualizations:
 
 **Daily Temperature Trends (January 2024)**
 
-<img src="outputs/us_daily_avg_temp_jan_2024.png" width="600" alt="Daily Average Temperature Chart">
+<img src="outputs_example/us_daily_avg_temp_jan_2024.png" width="600" alt="Daily Average Temperature Chart">
 
 *Line chart showing daily temperature fluctuations throughout January*
 
@@ -258,7 +258,7 @@ The system automatically generates professional visualizations:
 
 **Daily Minimum Temperatures (January 2024)**
 
-<img src="outputs/us_daily_min_temp_jan_2024.png" width="600" alt="Daily Minimum Temperature Chart">
+<img src="outputs_example/us_daily_min_temp_jan_2024.png" width="600" alt="Daily Minimum Temperature Chart">
 
 *Visualization of minimum temperature trends using MIN aggregation*
 
@@ -266,7 +266,7 @@ The system automatically generates professional visualizations:
 
 **Monthly Temperature Trends (2024)**
 
-<img src="outputs/us_monthly_avg_temp_2024.png" width="600" alt="Monthly Average Temperature Chart">
+<img src="outputs_example/us_monthly_avg_temp_2024.png" width="600" alt="Monthly Average Temperature Chart">
 
 *Full year overview with clear seasonal patterns*
 

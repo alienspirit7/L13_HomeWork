@@ -20,13 +20,14 @@ service-account-*.json
 *-key.json
 gcp-*.json
 
-# Generated output files
+# Generated output files (ignore outputs/ but not outputs_example/)
 outputs/
-outputs/*.csv
-outputs/*.png
-outputs/*.jpg
-outputs/*.jpeg
 *.csv
+# Don't ignore example outputs for documentation
+!outputs_example/
+!outputs_example/*.csv
+!outputs_example/*.png
+!outputs_example/*.jpg
 # Don't ignore documentation images
 !images/
 !images/*.png
