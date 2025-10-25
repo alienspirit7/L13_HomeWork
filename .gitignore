@@ -85,3 +85,5 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.DS_Store
+**/.DS_Store
